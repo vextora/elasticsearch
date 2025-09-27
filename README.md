@@ -6,7 +6,7 @@ Searching products with Suggestion using Elasticsearch + Postgresql + Golang
 
 ## How To
 
-1. Run make dev
+1. Run **make dev**
 2. Run in terminal to create superuser password in Elasticsearch :
 
 ```
