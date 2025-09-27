@@ -23,7 +23,8 @@ services:
     container_name: es
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false
+      - xpack.security.enabled=true
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
     ports:
       - "9200:9200"
     healthcheck:
@@ -36,6 +37,10 @@ services:
       retries: 30
       start_period: 10s
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2g
 
   app:
     build: .

@@ -26,11 +26,17 @@ type ProductService struct {
 func NewProductService(db *gorm.DB) *ProductService {
 	repo := database.NewGormProductRepository(db)
 
+	ecsURL := os.Getenv("ECS_URL")
+	ecsUser := os.Getenv("ECS_USERNAME")
+	ecsPass := os.Getenv("ECS_PASSWORD")
+
 	var es *es8.Client
 	var err error
 	for i := 0; i < 10; i++ {
 		es, err = es8.NewClient(es8.Config{
-			Addresses: []string{"http://es:9200"},
+			Addresses: []string{ecsURL},
+			Username:  ecsUser,
+			Password:  ecsPass,
 		})
 		if err == nil {
 			break

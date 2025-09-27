@@ -41,28 +41,6 @@ func startServer(service *application.ProductService) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
-	r.GET("/autocomplete", func(c *gin.Context) {
-		query := c.Query("q")
-		category := c.Query("category")
-		minPrice := 0.0
-		maxPrice := 0.0
-
-		results, err := service.Autocomplete(query, category, []string{}, minPrice, maxPrice)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		if results == nil {
-			results = []product.Product{}
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"count": len(results),
-			"data":  results,
-		})
-	})
-
 	r.POST("/internal/seed", func(c *gin.Context) {
 		if os.Getenv("ENABLE_SEED") != "true" {
 			c.JSON(http.StatusForbidden, gin.H{"error": "seeding is disabled"})
@@ -82,7 +60,7 @@ func startServer(service *application.ProductService) {
 		c.JSON(http.StatusOK, gin.H{"message": "seed completed"})
 	})
 
-	r.GET("/internal/ecs", func(c *gin.Context) {
+	r.POST("/internal/ecs", func(c *gin.Context) {
 		if err := service.InitProductIndexEcs(); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Create index error: %v", err)})
 			return
@@ -103,6 +81,28 @@ func startServer(service *application.ProductService) {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "sync done"})
+	})
+
+	r.GET("/autocomplete", func(c *gin.Context) {
+		query := c.Query("q")
+		category := c.Query("category")
+		minPrice := 0.0
+		maxPrice := 0.0
+
+		results, err := service.Autocomplete(query, category, []string{}, minPrice, maxPrice)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		if results == nil {
+			results = []product.Product{}
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"count": len(results),
+			"data":  results,
+		})
 	})
 
 	fmt.Println("===> Starting API server on :8080")
