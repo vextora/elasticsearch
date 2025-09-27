@@ -7,8 +7,8 @@ Searching products with Suggestion using Elasticsearch + Postgresql + Golang
 ## Cara Menjalankan
 
 1. Run make dev
-2. Run make seed
-3. Run make sync
+2. Open Postman and use http://localhost:8080/health
+3. All routes in main.go
 
 ## Kontak
 
