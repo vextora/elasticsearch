@@ -25,6 +25,11 @@ dev:
 .PHONY: seed
 seed: wait-db
 	@echo "Seeding database..."
+	# Cek apakah binary sudah ada di container, kalau tidak ada build dulu
+	@if ! docker exec $(APP_NAME) test -f tmp/main; then \
+		echo "Building binary inside container..."; \
+		docker exec $(APP_NAME) go build -o tmp/main cmd/app/main.go; \
+	fi
 	docker exec -it $(APP_NAME) ./tmp/main seed
 
 .PHONY: sync

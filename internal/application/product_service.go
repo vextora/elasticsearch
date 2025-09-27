@@ -79,6 +79,59 @@ func (s *ProductService) SeedFromCSV(filePath string) error {
 	return nil
 }
 
+func (s *ProductService) InitProductIndexEcs() error {
+	mapping := map[string]interface{}{
+		"mappings": map[string]interface{}{
+			"properties": map[string]interface{}{
+				"Name": map[string]interface{}{
+					"type": "text",
+				},
+				"Name_suggest": map[string]interface{}{
+					"type": "completion",
+				},
+				"Category": map[string]interface{}{
+					"type": "keyword",
+				},
+				"Price": map[string]interface{}{
+					"type": "float",
+				},
+				"Tags": map[string]interface{}{
+					"type": "keyword",
+				},
+			},
+		},
+	}
+
+	body, _ := json.Marshal(mapping)
+
+	exists, err := s.esClient.Indices.Exists([]string{"products"})
+	if err != nil {
+		return fmt.Errorf("failed to check index existence: %w", err)
+	}
+	defer exists.Body.Close()
+
+	if exists.StatusCode == 200 {
+		fmt.Println("Index 'products' sudah ada, skip pembuatan index.")
+		return nil
+	}
+
+	res, err := s.esClient.Indices.Create(
+		"products",
+		s.esClient.Indices.Create.WithBody(bytes.NewReader(body)),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create index: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return fmt.Errorf("failed to create index, status: %s", res.String())
+	}
+
+	fmt.Println("Index 'products' berhasil dibuat")
+	return nil
+}
+
 func (s *ProductService) SyncToElasticSearch() error {
 	products, err := s.repo.FindAll()
 	if err != nil {
@@ -182,9 +235,10 @@ func (s *ProductService) Autocomplete(query, category string, tags []string, min
 		})
 	}
 
-	esQuery["bool"].(map[string]interface{})["bool"].(map[string]interface{})["filter"] = filters
+	esQuery["query"].(map[string]interface{})["bool"].(map[string]interface{})["filter"] = filters
 
 	queryBody, _ := json.Marshal(esQuery)
+	fmt.Printf("DEBUG: ES Query = %s\n", string(queryBody))
 
 	res, err := s.esClient.Search(
 		s.esClient.Search.WithContext(context.Background()),
