@@ -7,7 +7,12 @@ Searching products with Suggestion using Elasticsearch + Postgresql + Golang
 ## How To
 
 1. Run make dev
-2. Run in terminal to create superuser password in Elasticsearch : docker exec -it es bin/elasticsearch-setup-passwords interactive
+2. Run in terminal to create superuser password in Elasticsearch :
+
+```
+docker exec -it es bin/elasticsearch-setup-passwords interactive
+```
+
 3. Run this command in terminal to create role and user. Use your own role, username and password
 
 ```
